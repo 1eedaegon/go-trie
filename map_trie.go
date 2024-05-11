@@ -3,21 +3,21 @@ package trie
 // MapTrie is a trie of runes with string keys and interface{} values.
 // Note that internal nodes have nil values so a stored nil value will not
 // be distinguishable and will not be included in Walks.
-type MapTrie struct {
+type RuneMapTrie struct {
 	value    interface{}
-	children map[rune]*MapTrie
+	children map[rune]*RuneMapTrie
 }
 
-var _ Trier = (*MapTrie)(nil)
+var _ Trier = (*RuneMapTrie)(nil)
 
 // NewMapTrie allocates and returns a new *MapTrie.
-func NewMapTrie() *MapTrie {
-	return new(MapTrie)
+func NewRuneMapTrie() *RuneMapTrie {
+	return new(RuneMapTrie)
 }
 
 // Get returns the value stored at the given key. Returns nil for internal
 // nodes or for nodes with a value of nil.
-func (trie *MapTrie) Get(key string) interface{} {
+func (trie *RuneMapTrie) Get(key string) interface{} {
 	node := trie
 	for _, r := range key {
 		node = node.children[r]
@@ -33,15 +33,15 @@ func (trie *MapTrie) Get(key string) interface{} {
 // if it replaces an existing value.
 // Note that internal nodes have nil values so a stored nil value will not
 // be distinguishable and will not be included in Walks.
-func (trie *MapTrie) Put(key string, value interface{}) bool {
+func (trie *RuneMapTrie) Put(key string, value interface{}) bool {
 	node := trie
 	for _, r := range key {
 		child := node.children[r]
 		if child == nil {
 			if node.children == nil {
-				node.children = map[rune]*MapTrie{}
+				node.children = map[rune]*RuneMapTrie{}
 			}
-			child = new(MapTrie)
+			child = new(RuneMapTrie)
 			node.children[r] = child
 		}
 		node = child
@@ -55,7 +55,7 @@ func (trie *MapTrie) Put(key string, value interface{}) bool {
 // Delete removes the value associated with the given key. Returns true if a
 // node was found for the given key. If the node or any of its ancestors
 // becomes childless as a result, it is removed from the trie.
-func (trie *MapTrie) Delete(key string) bool {
+func (trie *RuneMapTrie) Delete(key string) bool {
 	path := make([]nodeRune, len(key)) // record ancestors to check later
 	node := trie
 	for i, r := range key {
@@ -94,14 +94,14 @@ func (trie *MapTrie) Delete(key string) bool {
 // walker function with the key and value. If the walker function returns
 // an error, the walk is aborted.
 // The traversal is depth first with no guaranteed order.
-func (trie *MapTrie) Walk(walker WalkFunc) error {
+func (trie *RuneMapTrie) Walk(walker WalkFunc) error {
 	return trie.walk("", walker)
 }
 
 // WalkPath iterates over each key/value in the path in trie from the root to
 // the node at the given key, calling the given walker function for each
 // key/value. If the walker function returns an error, the walk is aborted.
-func (trie *MapTrie) WalkPath(key string, walker WalkFunc) error {
+func (trie *RuneMapTrie) WalkPath(key string, walker WalkFunc) error {
 	// Get root value if one exists.
 	if trie.value != nil {
 		if err := walker("", trie.value); err != nil {
@@ -124,11 +124,11 @@ func (trie *MapTrie) WalkPath(key string, walker WalkFunc) error {
 
 // MapTrie node and the rune key of the child the path descends into.
 type nodeRune struct {
-	node *MapTrie
+	node *RuneMapTrie
 	r    rune
 }
 
-func (trie *MapTrie) walk(key string, walker WalkFunc) error {
+func (trie *RuneMapTrie) walk(key string, walker WalkFunc) error {
 	if trie.value != nil {
 		if err := walker(key, trie.value); err != nil {
 			return err
@@ -142,6 +142,6 @@ func (trie *MapTrie) walk(key string, walker WalkFunc) error {
 	return nil
 }
 
-func (trie *MapTrie) isLeaf() bool {
+func (trie *RuneMapTrie) isLeaf() bool {
 	return len(trie.children) == 0
 }

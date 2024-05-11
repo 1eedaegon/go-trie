@@ -2,7 +2,7 @@ package trie
 
 type BitTrie struct {
 	value    interface{}
-	children map[rune]*MapTrie
+	children map[rune]*BitTrie
 }
 
 var _ Trier = (*BitTrie)(nil)
