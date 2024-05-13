@@ -4,7 +4,7 @@
 [![CI](https://github.com/1eedaegon/go-trie/actions/workflows/go.yml/badge.svg)](https://github.com/1eedaegon/go-trie/actions/workflows/go.yml)
 [![CodeQL](https://github.com/1eedaegon/go-trie/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/1eedaegon/go-trie/actions/workflows/codeql.yml)
 
-Yet another trie implement for directed acyclic graphs[DAG](https://github.com/1eedaegon/go-dag).
+Yet another trie implement for directed acyclic graphs([DAG](https://github.com/1eedaegon/go-dag)).
 
 ## Example
 
@@ -14,9 +14,8 @@ import (
 	trie "github.com/1eedaegon/go-trie"
 	...
 )
+```
 
 ## License
 
 [MIT](LICENSE)
-
-```
