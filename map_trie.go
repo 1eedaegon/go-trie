@@ -1,8 +1,10 @@
 package trie
 
-// MapTrie is a trie of runes with string keys and interface{} values.
-// Note that internal nodes have nil values so a stored nil value will not
-// be distinguishable and will not be included in Walks.
+/*
+RuneMapTrie is a trie of runes with string keys and interface{} values.
+random search speed is fast, but memory efficiency and insert operation efficiency
+are relatively low.
+*/
 type RuneMapTrie struct {
 	value    interface{}
 	children map[rune]*RuneMapTrie
@@ -10,13 +12,17 @@ type RuneMapTrie struct {
 
 var _ Trier = (*RuneMapTrie)(nil)
 
-// NewMapTrie allocates and returns a new *MapTrie.
+// NewMapTrie allocates and returns a new *RuneMapTrie.
 func NewRuneMapTrie() *RuneMapTrie {
-	return new(RuneMapTrie)
+	return &RuneMapTrie{}
 }
 
-// Get returns the value stored at the given key. Returns nil for internal
-// nodes or for nodes with a value of nil.
+// NewMapTrie allocates and returns a new *map of rune
+func newRuneMap() map[rune]*RuneMapTrie {
+	return map[rune]*RuneMapTrie{}
+}
+
+// Sequential search while traversing a string
 func (trie *RuneMapTrie) Get(key string) interface{} {
 	node := trie
 	for _, r := range key {
@@ -28,120 +34,111 @@ func (trie *RuneMapTrie) Get(key string) interface{} {
 	return node.value
 }
 
-// Put inserts the value into the trie at the given key, replacing any
-// existing items. It returns true if the put adds a new value, false
-// if it replaces an existing value.
-// Note that internal nodes have nil values so a stored nil value will not
-// be distinguishable and will not be included in Walks.
+/*
+Put operation inserts a value into the trie by key, replacing an existing item.
+Put returns true if it a new value, or false if it places an existing value.
+The default value is nil.
+*/
 func (trie *RuneMapTrie) Put(key string, value interface{}) bool {
 	node := trie
+	isNew := node.value == nil
 	for _, r := range key {
 		child := node.children[r]
 		if child == nil {
 			if node.children == nil {
-				node.children = map[rune]*RuneMapTrie{}
+				node.children = newRuneMap()
 			}
-			child = new(RuneMapTrie)
+			child = NewRuneMapTrie()
 			node.children[r] = child
 		}
 		node = child
 	}
-	// does node have an existing value?
-	isNewVal := node.value == nil
 	node.value = value
-	return isNewVal
+	return isNew
 }
 
-// Delete removes the value associated with the given key. Returns true if a
-// node was found for the given key. If the node or any of its ancestors
-// becomes childless as a result, it is removed from the trie.
+type nodeRune struct {
+	r    rune
+	node *RuneMapTrie
+}
+
+/*
+Delete operation removes the value for a key.
+If it is a leaf node, the node is removed from the tree.
+And if the parent node is a leaf node, children are nilized.
+*/
 func (trie *RuneMapTrie) Delete(key string) bool {
-	path := make([]nodeRune, len(key)) // record ancestors to check later
-	node := trie
+	path := make([]nodeRune, len(key)) // Rune 탐색 후 캐싱
+	node := trie                       // 탐색하면서 이쪽이 변경된다. 탐색이 끝나면 마지막노드가 된다.
 	for i, r := range key {
 		path[i] = nodeRune{r: r, node: node}
 		node = node.children[r]
-		if node == nil {
-			// node does not exist
+		if node == nil { // 없다.
 			return false
 		}
 	}
-	// delete the node value
 	node.value = nil
-	// if leaf, remove it from its parent's children map. Repeat for ancestor
-	// path.
 	if node.isLeaf() {
-		// iterate backwards over path
+		// 탐색이 끝난 마지막 노드가 leaf면, 부모 children에서 나를 삭제
+		// 가장 마지막 노드를 가리키기 때문에 nodeRune의 역순으로 탐색
 		for i := len(key) - 1; i >= 0; i-- {
 			parent := path[i].node
 			r := path[i].r
 			delete(parent.children, r)
 			if !parent.isLeaf() {
-				// parent has other children, stop
 				break
 			}
 			parent.children = nil
 			if parent.value != nil {
-				// parent has a value, stop
 				break
 			}
 		}
 	}
-	return true // node (internal or not) existed and its value was nil'd
-}
-
-// Walk iterates over each key/value stored in the trie and calls the given
-// walker function with the key and value. If the walker function returns
-// an error, the walk is aborted.
-// The traversal is depth first with no guaranteed order.
-func (trie *RuneMapTrie) Walk(walker WalkFunc) error {
-	return trie.walk("", walker)
-}
-
-// WalkPath iterates over each key/value in the path in trie from the root to
-// the node at the given key, calling the given walker function for each
-// key/value. If the walker function returns an error, the walk is aborted.
-func (trie *RuneMapTrie) WalkPath(key string, walker WalkFunc) error {
-	// Get root value if one exists.
-	if trie.value != nil {
-		if err := walker("", trie.value); err != nil {
-			return err
-		}
-	}
-
-	for i, r := range key {
-		if trie = trie.children[r]; trie == nil {
-			return nil
-		}
-		if trie.value != nil {
-			if err := walker(string(key[0:i+1]), trie.value); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// MapTrie node and the rune key of the child the path descends into.
-type nodeRune struct {
-	node *RuneMapTrie
-	r    rune
-}
-
-func (trie *RuneMapTrie) walk(key string, walker WalkFunc) error {
-	if trie.value != nil {
-		if err := walker(key, trie.value); err != nil {
-			return err
-		}
-	}
-	for r, child := range trie.children {
-		if err := child.walk(key+string(r), walker); err != nil {
-			return err
-		}
-	}
-	return nil
+	return true
 }
 
 func (trie *RuneMapTrie) isLeaf() bool {
 	return len(trie.children) == 0
+}
+
+func (trie *RuneMapTrie) Iterate(key string, cb Callback) error {
+	if trie.value != nil {
+		if err := cb("", trie.value); err != nil {
+			return err
+		}
+	}
+
+	for idx, r := range key {
+		if trie = trie.children[r]; trie == nil {
+			return nil
+		}
+		if trie.value != nil {
+			prefix := string(key[0 : idx+1])
+			if err := cb(prefix, trie.value); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (trie *RuneMapTrie) IterateAll(cb Callback) error {
+	return trie.dfs("", cb)
+}
+
+// Recursive DFS
+func (trie *RuneMapTrie) dfs(key string, cb Callback) error {
+	if trie.value != nil {
+		if err := cb(key, trie.value); err != nil {
+			return err
+		}
+	}
+	for r, child := range trie.children {
+		prefix := key + string(r)
+		if err := child.dfs(prefix, cb); err != nil {
+			return err
+		}
+	}
+	return nil
 }

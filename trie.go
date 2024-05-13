@@ -3,8 +3,8 @@ package trie
 type TrieType int
 
 const (
-	TypeMapTrie TrieType = 0
-	TypeBitTrie TrieType = 1
+	TypeRuneMapTrie TrieType = 0
+	TypeBitTrie     TrieType = 1
 )
 
 // Trier has 4 methods
@@ -22,12 +22,12 @@ type Trier interface {
 func NewTrie(trieType TrieType) Trier {
 	switch trieType {
 	case TypeBitTrie:
-		return &BitTrie{}
-	case TypeMapTrie:
-		return &MapTrie{}
+		return NewBitTrie()
+	case TypeRuneMapTrie:
+		return NewRuneMapTrie()
 	default:
-		return &MapTrie{}
+		return NewRuneMapTrie()
 	}
 }
 
-type WalkFunc func(key string, value interface{}) error
+type Callback func(key string, value interface{}) error

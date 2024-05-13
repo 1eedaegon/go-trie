@@ -7,6 +7,10 @@ type BitTrie struct {
 
 var _ Trier = (*BitTrie)(nil)
 
+func NewBitTrie() *BitTrie {
+	return new(BitTrie)
+}
+
 func (trie *BitTrie) Get(key string) interface{} {
 	return nil
 }
