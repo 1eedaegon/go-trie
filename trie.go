@@ -4,7 +4,7 @@ type TrieType int
 
 const (
 	TypeRuneMapTrie TrieType = 0
-	TypeBitTrie     TrieType = 1
+	TypeBitmapTrie  TrieType = 1
 )
 
 // Trie has 3 methods
@@ -16,12 +16,14 @@ type Trier interface {
 	Get(key string) interface{}
 	Put(key string, value interface{}) bool
 	Delete(key string) bool
+	Iterate(key string, cb Callback) error
+	IterateAll(cb Callback) error
 }
 
 func NewTrie(trieType TrieType) Trier {
 	switch trieType {
-	case TypeBitTrie:
-		return NewBitTrie()
+	case TypeBitmapTrie:
+		return NewBitmapTrie()
 	case TypeRuneMapTrie:
 		return NewRuneMapTrie()
 	default:

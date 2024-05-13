@@ -1,22 +1,29 @@
 package trie
 
-type BitTrie struct {
-	value    interface{}
-	children map[rune]*BitTrie
+type BitmapTrie struct {
+	leaves, labelBitmap []uint64
+	labels              []byte
+	ranks, selects      []int32
 }
 
-var _ Trier = (*BitTrie)(nil)
+var _ Trier = (*BitmapTrie)(nil)
 
-func NewBitTrie() *BitTrie {
-	return new(BitTrie)
+func NewBitmapTrie() *BitmapTrie {
+	return new(BitmapTrie)
 }
 
-func (trie *BitTrie) Get(key string) interface{} {
+func (trie *BitmapTrie) Get(key string) interface{} {
 	return nil
 }
-func (trie *BitTrie) Put(key string, value interface{}) bool {
+func (trie *BitmapTrie) Put(key string, value interface{}) bool {
 	return false
 }
-func (trie *BitTrie) Delete(key string) bool {
+func (trie *BitmapTrie) Delete(key string) bool {
 	return false
+}
+func (trie *BitmapTrie) Iterate(key string, cb Callback) error {
+	return nil
+}
+func (trie *BitmapTrie) IterateAll(cb Callback) error {
+	return nil
 }
