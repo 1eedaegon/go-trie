@@ -3,7 +3,43 @@ package trie
 import (
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
+
+//	func TestTableByTrieScenarios(t *testing.T) {
+//		for scenario, fn := range map[string]func(t *testing.T, trie Trier){
+//			"test trie":         testTrie,
+//			"test nil behavier": testNilBehavior,
+//		} {
+//			t.Run(scenario, func(t *testing.T) {
+//				trie := NewTrie()
+//				fn(t, trie)
+//			})
+//		}
+//	}
+
+func TestTrie(t *testing.T) {
+	trie := NewTrie()
+	testTrie(t, trie)
+}
+
+func TestPrefixSearchOperations(t *testing.T) {
+	trie := NewTrie()
+	testPrefixSearchOperations(t, trie)
+}
+
+func testPrefixSearchOperations(t *testing.T, trie Trier) {
+	trie.Put("HappyBrithday!", 0)
+	trie.Put("Happy!", 0)
+	trie.Put("Brithday!", 0)
+	trie.Put("pyBr", 0)
+	trie.Put("HappyBrithday!", 0)
+	result, err := trie.PrefixSearch("Happy")
+	require.NoError(t, err)
+	require.Equal(t, []string{"HappyBrithday!", "Happy!"}, result)
+
+}
 
 func testTrie(t *testing.T, trie Trier) {
 	const firstPutValue = "first put"

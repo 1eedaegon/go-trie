@@ -27,3 +27,7 @@ func (trie *BitmapTrie) Iterate(key string, cb Callback) error {
 func (trie *BitmapTrie) IterateAll(cb Callback) error {
 	return nil
 }
+
+func (trie *BitmapTrie) PrefixSearch(key string) ([]string, error) {
+	return nil, nil
+}
