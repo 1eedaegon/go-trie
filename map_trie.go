@@ -187,11 +187,6 @@ func (trie *RuneMapTrie) dfsByKey(key string, cb Callback) error {
 	return nil
 }
 
-// type RuneMapTrie struct {
-// 	value    interface{}
-// 	children map[rune]*RuneMapTrie
-// }
-
 type jsonMapTrie struct {
 	Value    *json.RawMessage        `json:"value,omitempty"`
 	Children map[string]*jsonMapTrie `json:"children,omitempty"`
@@ -216,7 +211,8 @@ func (t *RuneMapTrie) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jMapTrie)
 }
 
-// UnmarshalJSON은 JSON 데이터를 RuneMapTrie로 디코딩하는 메서드입니다.
+// UnmarshalJSON
+// If the value can be converted to int, downcast float64 to int.
 func (t *RuneMapTrie) UnmarshalJSON(data []byte) error {
 	jMapTrie := jsonMapTrie{}
 
