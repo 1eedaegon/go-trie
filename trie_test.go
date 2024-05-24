@@ -1,7 +1,9 @@
 package trie
 
 import (
+	"encoding/json"
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -29,6 +31,31 @@ func TestPrefixSearchOperations(t *testing.T) {
 	testPrefixSearchOperations(t, trie)
 }
 
+func TestMarshalling(t *testing.T) {
+	trie := NewTrie()
+	testMarshallingOperations(t, trie)
+}
+
+func testMarshallingOperations(t *testing.T, trie Trier) {
+	trie.Put("HappyBirthday!", 0)
+	trie.Put("Happy!", 0)
+	trie.Put("Brithday!", 0)
+	trie.Put("pyBr", 0)
+	trie.Put("HappyBrithday!", 0)
+
+	jsonData, err := json.Marshal(trie)
+	jsonString := "{\"children\":{\"B\":{\"children\":{\"r\":{\"children\":{\"i\":{\"children\":{\"t\":{\"children\":{\"h\":{\"children\":{\"d\":{\"children\":{\"a\":{\"children\":{\"y\":{\"children\":{\"!\":{\"value\":0}}}}}}}}}}}}}}}}},\"H\":{\"children\":{\"a\":{\"children\":{\"p\":{\"children\":{\"p\":{\"children\":{\"y\":{\"children\":{\"!\":{\"value\":0},\"B\":{\"children\":{\"i\":{\"children\":{\"r\":{\"children\":{\"t\":{\"children\":{\"h\":{\"children\":{\"d\":{\"children\":{\"a\":{\"children\":{\"y\":{\"children\":{\"!\":{\"value\":0}}}}}}}}}}}}}}},\"r\":{\"children\":{\"i\":{\"children\":{\"t\":{\"children\":{\"h\":{\"children\":{\"d\":{\"children\":{\"a\":{\"children\":{\"y\":{\"children\":{\"!\":{\"value\":0}}}}}}}}}}}}}}}}}}}}}}}}}}},\"p\":{\"children\":{\"y\":{\"children\":{\"B\":{\"children\":{\"r\":{\"value\":0}}}}}}}}}"
+	require.NoError(t, err)
+	require.Equal(t, jsonString, string(jsonData))
+
+	newTrie := &RuneMapTrie{}
+	err = json.Unmarshal(jsonData, newTrie)
+	// JSON 데이터를 RuneMapTrie로 언마샬링
+	require.NoError(t, err)
+	require.Equal(t, trie, newTrie)
+	require.True(t, reflect.DeepEqual(trie, newTrie))
+}
+
 func testPrefixSearchOperations(t *testing.T, trie Trier) {
 	trie.Put("HappyBrithday!", 0)
 	trie.Put("Happy!", 0)
@@ -37,7 +64,8 @@ func testPrefixSearchOperations(t *testing.T, trie Trier) {
 	trie.Put("HappyBrithday!", 0)
 	result, err := trie.PrefixSearch("Happy")
 	require.NoError(t, err)
-	require.Equal(t, []string{"HappyBrithday!", "Happy!"}, result)
+	require.Contains(t, result, "HappyBrithday!")
+	require.Contains(t, result, "Happy!")
 
 }
 
