@@ -11,6 +11,9 @@ const (
 // 1. Get by key
 // 2. Put with key and value
 // 3. Delete by key
+// 4. Iterate with callbck by key
+// 5. Iterate all element with callback
+// 6. Search for a prefix, it returns an slice of string
 type Trier interface {
 	Get(key string) interface{}
 	Put(key string, value interface{}) bool
